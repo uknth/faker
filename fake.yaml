@@ -1,0 +1,19 @@
+# error, info, debug
+server:
+  host: "0.0.0.0"
+  port: "12000"
+  
+mode: "debug"
+
+handlers:
+  - path: "/ping"
+    methods:
+      - "GET"
+    must_params:
+      - "q"
+    response:
+      source: "text"
+      args:
+        content: "pong"
+
+
