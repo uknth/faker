@@ -11,6 +11,7 @@ import (
 type response struct {
 	Source     string            `mapstructure:"source"`
 	StatusCode int               `mapstructure:"status_code"`
+	Headers    map[string]string `mapstructure:"headers"`
 	Arguments  map[string]string `mapstructure:"args"`
 }
 
@@ -26,6 +27,10 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
+		}
+
+		for k, v := range rc.Headers {
+			w.Header().Set(k, v)
 		}
 
 		w.WriteHeader(rc.StatusCode)
