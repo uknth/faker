@@ -44,5 +44,3 @@ vendor/src
 .DS_Store
 
 vendor/*
-
-faker-server
