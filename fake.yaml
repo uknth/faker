@@ -16,6 +16,8 @@ handlers:
     response:
       status_code: 200
       source: "text"
+      headers:
+        "content-type": "text/plain"
       args:
         content: "pong"
 
