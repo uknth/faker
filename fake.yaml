@@ -11,9 +11,26 @@ handlers:
       - "GET"
     must_params:
       - "q"
+    must_kv_params:
+      fields: "uniqueId"
     response:
+      status_code: 200
       source: "text"
       args:
         content: "pong"
+
+  - path: "/ping"
+    methods:
+      - "GET"
+    must_params:
+      - "bad"
+    must_kv_params:
+    response:
+      status_code: 500
+      source: "text"
+      args:
+        content: "pong"
+
+
 
 

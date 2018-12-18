@@ -9,8 +9,9 @@ import (
 )
 
 type response struct {
-	Source    string            `mapstructure:"source"`
-	Arguments map[string]string `mapstructure:"args"`
+	Source     string            `mapstructure:"source"`
+	StatusCode int               `mapstructure:"status_code"`
+	Arguments  map[string]string `mapstructure:"args"`
 }
 
 func (rc *response) HandlerFunc() http.HandlerFunc {
@@ -27,16 +28,17 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(rc.StatusCode)
 		w.Write(bt)
 	}
 }
 
 type handler struct {
-	Pa string   `mapstructure:"path"`
-	Me []string `mapstructure:"methods"`
-	MP []string `mapstructure:"must_params"`
-	Re response `mapstructure:"response"`
+	Pa  string            `mapstructure:"path"`
+	Me  []string          `mapstructure:"methods"`
+	MP  []string          `mapstructure:"must_params"`
+	MKV map[string]string `mapstructure:"must_kv_params"`
+	Re  response          `mapstructure:"response"`
 }
 
 func (hc *handler) Path() string      { return hc.Pa }
@@ -47,6 +49,12 @@ func (hc *handler) MustParams() []Pair {
 		p := NewEmptyPair(mp)
 		pairs = append(pairs, p)
 	}
+
+	for k, v := range hc.MKV {
+		p := NewPair(k, v)
+		pairs = append(pairs, p)
+	}
+
 	return pairs
 }
 func (hc *handler) HandlerFunc() http.HandlerFunc { return hc.Re.HandlerFunc() }

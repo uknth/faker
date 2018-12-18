@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/pkg/errors"
 	"github.com/urfave/negroni"
 )
 
@@ -50,17 +49,6 @@ func (s *Server) Close() error {
 	defer cancel()
 
 	return s.Shutdown(ctx)
-}
-
-// Restart starts the server again after gracefully shutting it down
-func (s *Server) Restart() error {
-	err := s.Close()
-	if err != nil {
-		return errors.Wrap(err, "Error Closing Server in Restart")
-	}
-
-	s.Prepare()
-	return s.Open()
 }
 
 // Handle provides utility method to handle request

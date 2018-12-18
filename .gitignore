@@ -45,6 +45,4 @@ vendor/src
 
 vendor/*
 
-wingman/debug
-wingm
-wingman-server
+faker-server
