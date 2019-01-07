@@ -1,0 +1,26 @@
+sudo: required
+services:
+    - docker
+
+language: go
+
+go:
+    - "1.10.x"
+    - "1.11.x"
+
+before_install:
+    - set -e
+    
+install:
+    - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+
+before_script: 
+    - dep ensure -v
+
+script:
+  - go clean github.com/uknth/faker/...
+  - go test github.com/uknth/faker/...
+
+notifications:
+  email:
+    - uknth@outlook.com
