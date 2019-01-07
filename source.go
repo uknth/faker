@@ -53,6 +53,8 @@ func NewSource(kind string, args map[string]string) (Source, error) {
 	switch kind {
 	case "text":
 		return NewTextSource(args)
+	case "file":
+		return NewFileSource(args)
 	default:
 		return nil, errors.Wrap(
 			errors.New("Uknown kind of source"),
