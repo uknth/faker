@@ -15,6 +15,7 @@ handlers:
       fields: "uniqueId"
     response:
       status_code: 200
+      delay: 1
       source: "text"
       headers:
         "content-type": "text/plain"

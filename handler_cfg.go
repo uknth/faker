@@ -3,6 +3,7 @@ package faker
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
@@ -11,6 +12,7 @@ import (
 type response struct {
 	Source     string            `mapstructure:"source"`
 	StatusCode int               `mapstructure:"status_code"`
+	Delay      int               `mapstructure:"delay"`
 	Headers    map[string]string `mapstructure:"headers"`
 	Arguments  map[string]string `mapstructure:"args"`
 }
@@ -23,6 +25,9 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		if rc.Delay > 0 {
+			time.Sleep(time.Duration(rc.Delay) * time.Second)
+		}
 		bt, err := source.Response()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
