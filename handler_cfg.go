@@ -1,12 +1,19 @@
 package faker
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+)
+
+const (
+	delay     = "delay"
+	badstatus = "bad_status"
 )
 
 type response struct {
@@ -25,9 +32,22 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		if rc.Delay > 0 {
-			time.Sleep(time.Duration(rc.Delay) * time.Second)
+		dl := r.FormValue(delay)
+
+		if dl != "" || rc.Delay > 0 {
+			if dl != "" {
+				in, err := strconv.Atoi(dl)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				fmt.Println("Sleeping:", in)
+				time.Sleep(time.Duration(in) * time.Second)
+			} else {
+				time.Sleep(time.Duration(rc.Delay) * time.Second)
+			}
 		}
+
 		bt, err := source.Response()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -38,7 +58,19 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			w.Header().Set(k, v)
 		}
 
-		w.WriteHeader(rc.StatusCode)
+		sc := r.FormValue(badstatus)
+		if sc != "" {
+			in, err := strconv.Atoi(sc)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			w.WriteHeader(in)
+		} else {
+			w.WriteHeader(rc.StatusCode)
+		}
+
 		w.Write(bt)
 	}
 }

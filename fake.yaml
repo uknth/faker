@@ -15,12 +15,31 @@ handlers:
       fields: "uniqueId"
     response:
       status_code: 200
-      delay: 1
+      delay: 0
       source: "text"
       headers:
         "content-type": "text/plain"
       args:
         content: "pong"
+
+  - path: "/ping"
+    methods:
+      - "GET"
+    must_params:
+      - "q"
+      - "delay"
+    must_kv_params:
+      fields: "uniqueId"
+    response:
+      status_code: 200
+      delay: 5
+      source: "text"
+      headers:
+        "content-type": "text/plain"
+      args:
+        content: "pong"
+
+
 
   - path: "/ping"
     methods:
