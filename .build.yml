@@ -1,0 +1,27 @@
+image: debian/stable
+sources:
+    - https://git.sr.ht/~uknth/faker
+tasks:
+    - debian: |
+        sudo apt-get install -y curl
+    - go_install: |
+        wget -q https://dl.google.com/go/go1.12.linux-amd64.tar.gz
+        sudo tar -C /usr/local -xzf go1.12.linux-amd64.tar.gz
+        sudo ln -s /usr/local/go/bin/go /usr/bin/go
+        go env
+    - dep_install: |
+        mkdir -p $HOME/go/bin
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+        sudo ln -s /home/build/go/bin/dep /usr/bin/dep
+    - src_copy: | 
+        mkdir -p $HOME/go/src/git.sr.ht/~uknth
+        mv faker $HOME/go/src/git.sr.ht/~uknth
+    - dep_ensure: |
+        cd $HOME/go/src/git.sr.ht/~uknth/faker
+        dep ensure -v
+    - test: |
+        go test -v git.sr.ht/~uknth/faker
+triggers:
+    - action: email
+      condition: always
+      to: uknth@outlook.com
