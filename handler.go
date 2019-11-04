@@ -1,6 +1,7 @@
 package faker
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -41,7 +42,6 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				fmt.Println("Sleeping:", in)
 				time.Sleep(time.Duration(in) * time.Second)
 			} else {
 				time.Sleep(time.Duration(rc.Delay) * time.Second)
@@ -75,11 +75,17 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 	}
 }
 
+type failure struct {
+	Per    int `mapstructure:"percentage"`
+	Status int `mapstructure:"http_status"`
+}
+
 type handler struct {
 	Pa  string            `mapstructure:"path"`
 	Me  []string          `mapstructure:"methods"`
 	MP  []string          `mapstructure:"must_params"`
 	MKV map[string]string `mapstructure:"must_kv_params"`
+	Fr  failure           `mapstructure:"failure"`
 	Re  response          `mapstructure:"response"`
 }
 
@@ -99,7 +105,59 @@ func (hc *handler) MustParams() []Pair {
 
 	return pairs
 }
-func (hc *handler) HandlerFunc() http.HandlerFunc { return hc.Re.HandlerFunc() }
+func (hc *handler) HandlerFunc() http.HandlerFunc {
+	fn := hc.Re.HandlerFunc()
+
+	if hc.Fr.Per == 0 {
+		return fn
+	}
+
+	// hc.Fr != 0
+	var (
+		success = 1.00
+		total   = 1.00
+	)
+
+	if !(0 < hc.Fr.Per && hc.Fr.Per < 100) {
+		fmt.Println("Incorrect Failure Rate:", hc.Fr.Per)
+		return fn
+	}
+
+	return func(rw http.ResponseWriter, re *http.Request) {
+		// fmt.Println(
+		// 	"D:", float32(success/total),
+		// 	"P:", float32(hc.Fr.Per)/100.00,
+		// 	"B", float32(success/total) <= float32(hc.Fr.Per)/100.00,
+		// )
+		if float32(success/total) <= float32(hc.Fr.Per)/100.00 {
+			defer func() {
+				success++
+				total++
+			}()
+
+			fn(rw, re)
+			return
+		}
+
+		var (
+			message = map[string]interface{}{
+				"error": "failure due to threshold",
+				"code":  hc.Fr.Status,
+			}
+		)
+
+		defer func() {
+			total++
+		}()
+
+		rw.WriteHeader(hc.Fr.Status)
+		err := json.NewEncoder(rw).Encode(message)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+}
 
 // Handler handles the request
 type Handler interface {

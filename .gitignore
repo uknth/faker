@@ -44,3 +44,4 @@ vendor/src
 .DS_Store
 
 vendor/*
+*.bin

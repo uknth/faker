@@ -55,4 +55,17 @@ handlers:
 
 
 
+  - path: "/failure"
+    methods:
+      - "GET"
+    must_params:
+    must_kv_params:
+    failure:
+      percentage: 75
+      http_status: 500
+    response:
+      status_code: 200
+      source: "text"
+      args:
+        content: "pong"
 
