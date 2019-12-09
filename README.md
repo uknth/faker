@@ -1,4 +1,6 @@
-## Faker
+# Faker
+
+[![Github Actions Status](https://github.com/uknth/faker/workflows/Go/badge.svg)](https://github.com/uknth/faker/actions)
 
 Faker is small utility to fake any API. 
 
