@@ -69,3 +69,11 @@ handlers:
       args:
         content: "pong"
 
+  - path: "/reflect"
+    methods:
+      - "POST"
+    must_params:
+    must_kv_params:
+    response:
+      status_code: 200
+      source: "reflect"
