@@ -3,6 +3,7 @@ package faker
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
@@ -26,8 +27,16 @@ type response struct {
 
 func (rc *response) HandlerFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		btr, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Println("URL", r.RequestURI, "Source:", rc.Source, "Request: ", string(btr))
+
 		// create the source
-		source, err := NewSource(rc.Source, r, rc.Arguments)
+		source, err := NewSource(rc.Source, btr, rc.Arguments)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -71,6 +80,7 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			w.WriteHeader(rc.StatusCode)
 		}
 
+		fmt.Println("URL", r.RequestURI, "Source:", rc.Source, "Response: ", string(bt))
 		w.Write(bt)
 	}
 }

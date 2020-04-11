@@ -2,7 +2,6 @@ package faker
 
 import (
 	"io/ioutil"
-	"net/http"
 	"path/filepath"
 
 	"github.com/pkg/errors"
@@ -50,26 +49,26 @@ func NewFileSource(args map[string]string) (Source, error) {
 }
 
 type reflectSource struct {
-	req *http.Request
+	bt []byte
 }
 
 func (rs *reflectSource) Response() ([]byte, error) {
-	return ioutil.ReadAll(rs.req.Body)
+	return rs.bt, nil
 }
 
-func NewReflectedSource(req *http.Request) (Source, error) {
-	return &reflectSource{req}, nil
+func NewReflectedSource(bt []byte) (Source, error) {
+	return &reflectSource{bt}, nil
 }
 
 // NewSource returns text source
-func NewSource(kind string, req *http.Request, args map[string]string) (Source, error) {
+func NewSource(kind string, bt []byte, args map[string]string) (Source, error) {
 	switch kind {
 	case "text":
 		return NewTextSource(args)
 	case "file":
 		return NewFileSource(args)
 	case "reflect":
-		return NewReflectedSource(req)
+		return NewReflectedSource(bt)
 	default:
 		return nil, errors.Wrap(
 			errors.New("Uknown kind of source"),
