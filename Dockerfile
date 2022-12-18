@@ -1,12 +1,10 @@
-FROM golang:latest
+FROM ubuntu:22.04
+WORKDIR /faker
 
-WORKDIR /go/src/github.com/uknth/faker
+ADD bin/faker /faker
+ADD fake.yaml /faker
+ADD scripts/run.sh /faker
 
-COPY . .
+ENV PATH="${PATH}:/faker"
 
-RUN go mod tidy
-RUN go install -v github.com/uknth/faker/...
-
-RUN export PATH="$PATH:/go/bin"
-
-CMD ["faker"]
+CMD ["bash", "run.sh"]
