@@ -25,8 +25,6 @@ cat /etc/os-release
 echo "-----------------------------------------------"
 echo "> uname"
 uname -a
-echo "---"
-file $(which ls)
 echo "-----------------------------------------------"
 echo "> Env details with '$service_upper' prefix."
 for en in $(env |grep '^'$service_upper''); do
@@ -41,8 +39,6 @@ export PATH="$(pwd)/../bin:$(pwd)/bin:$PATH"
 echo "-----------------------------------------------"
 echo "> checking binary file"
 stat $(which faker)
-echo "---"
-file $(which faker)
 echo "-----------------------------------------------"
 
 if ! command -v "$service" > /dev/null; then
