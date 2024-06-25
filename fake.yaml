@@ -77,3 +77,18 @@ handlers:
     response:
       status_code: 200
       source: "reflect"
+
+  - path: "/nofail"
+    methods:
+      - "GET"
+    must_params:
+    must_kv_params:
+    response:
+      ignore_params:
+        - "bad_status"
+      status_code: 200
+      source: "text"
+      args:
+        content: "pong"
+    
+          

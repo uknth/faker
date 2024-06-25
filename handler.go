@@ -29,11 +29,14 @@ type response struct {
 func (rc *response) HandlerFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if len(rc.IgnoreParams) > 0 {
+			u := r.URL
+			q := u.Query()
+
 			for _, v := range rc.IgnoreParams {
-				r.URL.Query().Del(v)
+				q.Del(v)
 			}
 
-			r.URL.RawQuery = r.URL.Query().Encode()
+			u.RawQuery = q.Encode()
 		}
 
 		btr, err := ioutil.ReadAll(r.Body)
