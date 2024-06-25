@@ -18,15 +18,24 @@ const (
 )
 
 type response struct {
-	Source     string            `mapstructure:"source"`
-	StatusCode int               `mapstructure:"status_code"`
-	Delay      int               `mapstructure:"delay"`
-	Headers    map[string]string `mapstructure:"headers"`
-	Arguments  map[string]string `mapstructure:"args"`
+	Source       string            `mapstructure:"source"`
+	StatusCode   int               `mapstructure:"status_code"`
+	IgnoreParams []string          `mapstructure:"ignore_params"`
+	Delay        int               `mapstructure:"delay"`
+	Headers      map[string]string `mapstructure:"headers"`
+	Arguments    map[string]string `mapstructure:"args"`
 }
 
 func (rc *response) HandlerFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if len(rc.IgnoreParams) > 0 {
+			for _, v := range rc.IgnoreParams {
+				r.URL.Query().Del(v)
+			}
+
+			r.URL.RawQuery = r.URL.Query().Encode()
+		}
+
 		btr, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -115,6 +124,7 @@ func (hc *handler) MustParams() []Pair {
 
 	return pairs
 }
+
 func (hc *handler) HandlerFunc() http.HandlerFunc {
 	fn := hc.Re.HandlerFunc()
 
@@ -149,12 +159,10 @@ func (hc *handler) HandlerFunc() http.HandlerFunc {
 			return
 		}
 
-		var (
-			message = map[string]interface{}{
-				"error": "failure due to threshold",
-				"code":  hc.Fr.Status,
-			}
-		)
+		message := map[string]interface{}{
+			"error": "failure due to threshold",
+			"code":  hc.Fr.Status,
+		}
 
 		defer func() {
 			total++
@@ -166,7 +174,6 @@ func (hc *handler) HandlerFunc() http.HandlerFunc {
 			panic(err)
 		}
 	}
-
 }
 
 // Handler handles the request
