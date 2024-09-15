@@ -26,6 +26,20 @@ type response struct {
 	Arguments    map[string]string `mapstructure:"args"`
 }
 
+func isIgnored(key string, params []string) bool {
+	if len(params) == 0 {
+		return false
+	}
+
+	for _, pr := range params {
+		if pr == key {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (rc *response) HandlerFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if len(rc.IgnoreParams) > 0 {
@@ -54,18 +68,19 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			return
 		}
 
-		dl := r.FormValue(delay)
-
-		if dl != "" || rc.Delay > 0 {
-			if dl != "" {
-				in, err := strconv.Atoi(dl)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
+		if !isIgnored(delay, rc.IgnoreParams) {
+			dl := r.FormValue(delay)
+			if dl != "" || rc.Delay > 0 {
+				if dl != "" {
+					in, err := strconv.Atoi(dl)
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusBadRequest)
+						return
+					}
+					time.Sleep(time.Duration(in) * time.Second)
+				} else {
+					time.Sleep(time.Duration(rc.Delay) * time.Second)
 				}
-				time.Sleep(time.Duration(in) * time.Second)
-			} else {
-				time.Sleep(time.Duration(rc.Delay) * time.Second)
 			}
 		}
 
@@ -79,15 +94,21 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			w.Header().Set(k, v)
 		}
 
-		sc := r.FormValue(badstatus)
-		if sc != "" {
-			in, err := strconv.Atoi(sc)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
+		if !isIgnored(badstatus, rc.IgnoreParams) {
+			sc := r.FormValue(badstatus)
+			if sc != "" {
+				in, err := strconv.Atoi(sc)
+				if err != nil {
+					http.Error(
+						w,
+						err.Error(),
+						http.StatusBadRequest,
+					)
+					return
+				}
 
-			w.WriteHeader(in)
+				w.WriteHeader(in)
+			}
 		} else {
 			w.WriteHeader(rc.StatusCode)
 		}
