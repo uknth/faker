@@ -94,6 +94,9 @@ func (rc *response) HandlerFunc() http.HandlerFunc {
 			w.Header().Set(k, v)
 		}
 
+		w.Header().Set("unx-faker-request-uri", r.RequestURI)
+		w.Header().Set("unx-faker-source", rc.Source)
+
 		if !isIgnored(badstatus, rc.IgnoreParams) {
 			sc := r.FormValue(badstatus)
 			if sc != "" {
